@@ -7,13 +7,13 @@ import threading
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# ─────────────────────────────────────────────
+# ───────────────────────────────────────────────
 TEAM_ID = "kaliza07"
 BASE_TOPIC = f"rfid/{TEAM_ID}/"
 STATUS_TOPIC  = BASE_TOPIC + "card/status"
 TOPUP_TOPIC   = BASE_TOPIC + "card/topup"
 BALANCE_TOPIC = BASE_TOPIC + "card/balance"
-# ─────────────────────────────────────────────
+# ───────────────────────────────────────────────
 
 # MQTT Client
 mqtt_client = mqtt.Client()
@@ -67,4 +67,4 @@ def serve_dashboard():
 
 if __name__ == '__main__':
     print(f"[INFO] Backend starting for team: {TEAM_ID}")
-    socketio.run(app, host='127.0.0.1', port=5000, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=9243, debug=True, allow_unsafe_werkzeug=True)

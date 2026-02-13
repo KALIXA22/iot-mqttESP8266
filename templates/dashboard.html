@@ -19,7 +19,7 @@
         
         <header class="flex justify-between items-center mb-10">
             <div>
-                <h1 class="text-4xl font-extrabold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Nexus RFID</h1>
+                <h1 class="text-4xl font-extrabold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Kaliza RFID</h1>
                 <p class="text-slate-400 text-sm">Real-time Edge Controller Monitoring</p>
             </div>
             <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800 border border-slate-700">
@@ -85,7 +85,7 @@
 
     <script>
         // const socket = io();
-        const socket = io('http://127.0.0.1:5000'); // explicitly point to Flask backend
+        const socket = io(); // explicitly point to Flask backend
         const activityBody = document.getElementById('activity-body');
 
         socket.on('update_dashboard', function(data) {
