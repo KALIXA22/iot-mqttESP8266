@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAL-Z POS | Live Terminal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: screen;
+        }
+        .glass { 
+            background: rgba(255, 255, 255, 0.7); 
+            /* backdrop-filter: blur(15px);  */
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .item-card {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .item-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <script defer src="{{ url_for('static', filename='js/customize.js') }}"></script>
+</head>
+<body class="text-slate-800 min-h-screen">
+
+    <nav class="glass sticky top-0 z-50 px-6 py-4 mb-8 shadow-sm">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200">
+                    <span class="text-white font-bold text-xl">K</span>
+                </div>
+                <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-400 bg-clip-text text-transparent">KAL-Z POS</h1>
+            </div>
+            <div class="flex bg-slate-200/50 p-1 rounded-2xl items-center gap-2">
+                <button onclick="showTab('store')" id="btn-store" class="px-6 py-2 rounded-xl font-bold transition-all duration-300 bg-white text-indigo-600 shadow-sm">🛒 Store</button>
+                <button onclick="showTab('admin')" id="btn-admin" class="px-6 py-2 rounded-xl font-bold transition-all duration-300 text-slate-500 hover:text-indigo-600">⚙️ Admin</button>
+                <button onclick="openCustomize()" id="btn-customize" class="px-4 py-2 rounded-xl font-semibold text-sm bg-white/80 hover:bg-white">🎨 Customize</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6">
+        
+        <section id="store" class="tab-content active animate-fade-in">
+            <div class="grid lg:grid-cols-3 gap-10">
+                <div class="lg:col-span-2">
+                    <div class="flex justify-between items-end mb-8">
+                        <div>
+                            <h2 class="text-3xl font-extrabold text-slate-900">Available Products</h2>
+                            <p class="text-slate-500">Tap an item to add it to your order</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                        <div onclick="addToCart('Green Tea', 400)" class="item-card glass p-6 rounded-[0.5rem] cursor-pointer text-center group">
+                            <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-emerald-500 transition-colors">
+                                <span class="text-3xl">🍵</span>
+                            </div>
+                            <h3 class="font-bold text-lg">Green Tea</h3>
+                            <p class="text-emerald-600 font-bold">400 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Berry Smoothie', 1200)" class="item-card glass p-6 rounded-[0.5rem] cursor-pointer text-center group">
+                            <div class="w-16 h-16 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-rose-500 transition-colors">
+                                <span class="text-3xl">🍓</span>
+                            </div>
+                            <h3 class="font-bold text-lg">Berry Smoothie</h3>
+                            <p class="text-rose-600 font-bold">1,200 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Lemonade', 700)" class="item-card glass p-5 rounded-xl cursor-pointer text-center border-slate-100 group">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-yellow-500 transition-colors">
+                                <span class="text-2xl">🍋</span>
+                            </div>
+                            <h3 class="font-bold text-md">Lemonade</h3>
+                            <p class="text-yellow-600 font-bold text-sm">700 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Berry Juice', 1300)" class="item-card glass p-5 rounded-xl cursor-pointer text-center border-slate-100 group">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-500 transition-colors">
+                                <span class="text-2xl">🍇</span>
+                            </div>
+                            <h3 class="font-bold text-md">Berry Juice</h3>
+                            <p class="text-purple-600 font-bold text-sm">1,300 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Cheesy Nachos', 1500)" class="item-card glass p-5 rounded-xl cursor-pointer text-center border-slate-100 group">
+                            <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-amber-500 transition-colors">
+                                <span class="text-2xl">🧀</span>
+                            </div>
+                            <h3 class="font-bold text-md">Cheesy Nachos</h3>
+                            <p class="text-amber-600 font-bold text-sm">1,500 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Club Sandwich', 1800)" class="item-card glass p-5 rounded-xl cursor-pointer text-center border-slate-100 group">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-500 transition-colors">
+                                <span class="text-2xl">🥪</span>
+                            </div>
+                            <h3 class="font-bold text-md">Club Sandwich</h3>
+                            <p class="text-indigo-600 font-bold text-sm">1,800 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Garden Salad', 3200)" class="item-card glass p-5 rounded-xl cursor-pointer text-center border-slate-100 group">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-green-500 transition-colors">
+                                <span class="text-2xl">🥗</span>
+                            </div>
+                            <h3 class="font-bold text-md">Garden Salad</h3>
+                            <p class="text-green-600 font-bold text-sm">3,200 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Sushi Platter', 5000)" class="item-card glass p-5 rounded-xl cursor-pointer text-center border-slate-100 group">
+                            <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-slate-300 transition-colors">
+                                <span class="text-2xl">🍣</span>
+                            </div>
+                            <h3 class="font-bold text-md">Sushi Platter</h3>
+                            <p class="text-slate-600 font-bold text-sm">5,000 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Blueberry Muffin', 1000)" class="item-card glass p-5 rounded-xl cursor-pointer text-center border-slate-100 group">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-400 transition-colors">
+                                <span class="text-2xl">🧁</span>
+                            </div>
+                            <h3 class="font-bold text-md">Blueberry Muffin</h3>
+                            <p class="text-blue-600 font-bold text-sm">1,000 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Chocolate Cookie', 600)" class="item-card glass p-5 rounded-xl cursor-pointer text-center border-slate-100 group">
+                            <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-amber-400 transition-colors">
+                                <span class="text-2xl">🍪</span>
+                            </div>
+                            <h3 class="font-bold text-md">Chocolate Cookie</h3>
+                            <p class="text-amber-600 font-bold text-sm">600 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Classic Burger', 3500)" class="item-card glass p-6 rounded-[0.5rem] cursor-pointer text-center group">
+                            <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-emerald-500 transition-colors">
+                                <span class="text-3xl">🍔</span>
+                            </div>
+                            <h3 class="font-bold text-lg">Classic Burger</h3>
+                            <p class="text-emerald-600 font-bold">3,500 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Taco', 900)" class="item-card glass p-6 rounded-[0.5rem] cursor-pointer text-center group">
+                            <div class="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-amber-500 transition-colors">
+                                <span class="text-3xl">🌮</span>
+                            </div>
+                            <h3 class="font-bold text-lg">Taco</h3>
+                            <p class="text-amber-700 font-bold">900 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Mediterranean Wrap', 3600)" class="item-card glass p-6 rounded-[0.5rem] cursor-pointer text-center group">
+                            <div class="w-16 h-16 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-teal-500 transition-colors">
+                                <span class="text-3xl">🌯</span>
+                            </div>
+                            <h3 class="font-bold text-lg">Mediterranean Wrap</h3>
+                            <p class="text-teal-600 font-bold">3,600 RWF</p>
+                        </div>
+
+                        <div onclick="addToCart('Gelato', 1400)" class="item-card glass p-6 rounded-[0.5rem] cursor-pointer text-center group">
+                            <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-pink-500 transition-colors">
+                                <span class="text-3xl">🍨</span>
+                            </div>
+                            <h3 class="font-bold text-lg">Gelato</h3>
+                            <p class="text-pink-600 font-bold">1,400 RWF</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass rounded-[0.8rem] p-8 shadow-xl shadow-indigo-100/50 h-fit sticky top-28 border-indigo-100">
+                    <h2 class="text-2xl font-bold mb-6">Current Order</h2>
+                    <div id="cart-list" class="space-y-4 mb-8 min-h-[100px]">
+                        <p class="text-slate-400 text-center py-10">No items selected</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-500 font-medium">Subtotal</span>
+                            <span class="text-2xl font-black text-indigo-600"><span id="total-val">0</span> RWF</span>
+                        </div>
+                        <button onclick="startCheckout()" id="pay-btn" class="w-full bg-indigo-600 text-white py-5 rounded-[0.8rem] font-bold text-lg shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95">
+                            Complete Purchase
+                        </button>
+                        <button onclick="clearCart()" class="w-full text-slate-400 font-bold text-sm hover:text-red-500">Clear All</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin" class="tab-content animate-fade-in">
+            <div class="grid lg:grid-cols-2 gap-10">
+                <div class="glass p-10 rounded-[0.8rem] shadow-xl">
+                    <h2 class="text-3xl font-extrabold mb-8 text-indigo-600">Reload Card</h2>
+                    <div class="space-y-8">
+                        <div class="relative">
+                            <label class="text-xs font-black uppercase tracking-widest text-indigo-400 absolute -top-2 left-4 bg-white px-2">Card ID</label>
+                            <input type="text" id="admin-uid" class="w-full bg-white/50 border-2 border-slate-100 rounded-2xl p-5 font-mono text-indigo-600 focus:border-indigo-500 outline-none" placeholder="Tap card to scan...">
+                        </div>
+                        <div class="relative">
+                            <label class="text-xs font-black uppercase tracking-widest text-indigo-400 absolute -top-2 left-4 bg-white px-2">Top-up Amount</label>
+                            <input type="number" id="admin-amount" class="w-full bg-white/50 border-2 border-slate-100 rounded-2xl p-5 text-2xl font-bold focus:border-indigo-500 outline-none" placeholder="0.00">
+                        </div>
+                        <button onclick="adminTopup()" class="w-full bg-emerald-500 text-white py-5 rounded-2xl font-bold text-xl shadow-lg shadow-emerald-100 hover:bg-emerald-600 transition-all">
+                            Complete Deposit
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-indigo-600 p-8 rounded-[0.8rem] text-white shadow-xl shadow-indigo-200">
+                        <h3 class="font-bold text-xl mb-2">Activity Log</h3>
+                        <div id="latest-scan" class="text-indigo-100">Waiting for first scan...</div>
+                    </div>
+                    <div class="glass p-8 rounded-[0.8rem]">
+                        <h3 class="font-black text-slate-400 uppercase text-xs tracking-widest mb-4">Traffic History</h3>
+                        <div id="tap-history" class="space-y-3 font-medium text-slate-600">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="pay-modal" class="fixed inset-0 bg-white/60 backdrop-blur-xl hidden flex items-center justify-center z-[100]">
+        <div class="glass p-12 rounded-[3rem] shadow-2xl border-white text-center max-w-sm w-full animate-bounce-short">
+            <div class="w-24 h-24 bg-indigo-600 rounded-[0.5rem] flex items-center justify-center mx-auto mb-8 shadow-xl shadow-indigo-200">
+                <span class="text-5xl text-white animate-pulse">🛰️</span>
+            </div>
+            <h2 class="text-3xl font-black mb-2 text-indigo-900">Place Card</h2>
+            <p class="text-slate-500 mb-8 font-medium">Holding for <span id="modal-total" class="text-indigo-600 font-black">0</span> RWF</p>
+            <button onclick="closeModal()" class="bg-slate-100 px-8 py-3 rounded-xl font-bold text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Customize Modal -->
+    <div id="customize-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-[110]">
+        <div class="glass p-8 rounded-2xl w-96">
+            <h3 class="text-xl font-bold mb-4">Customize UI</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-slate-600 mb-1">Theme</label>
+                    <select id="ui-theme" class="w-full p-2 rounded border" title="modes">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-600 mb-1">Accent Color
+                    <input id="ui-accent" type="color" value="#6366f1" class="w-full h-10" />
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-600 mb-1">Font
+                    <select id="ui-font" class="w-full p-2 rounded border">
+                        <option value="Outfit">Outfit</option>
+                        <option value="Inter">Inter</option>
+                        <option value="Poppins">Poppins</option>
+                    </select>
+                    </label>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeCustomize()" class="px-4 py-2 rounded bg-slate-100">Cancel</button>
+                    <button onclick="applyCustomize()" class="px-4 py-2 rounded bg-indigo-600 text-white">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let cart = [];
+        let total = 0;
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.replace('bg-white', 'text-slate-500'));
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('text-indigo-600', 'shadow-sm'));
+            
+            const activeBtn = document.getElementById('btn-' + tabName);
+            activeBtn.classList.replace('text-slate-500', 'bg-white');
+            activeBtn.classList.add('text-indigo-600', 'shadow-sm');
+        }
+
+        function addToCart(name, price) {
+            cart.push({name, price});
+            updateCartUI();
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cart-list');
+            total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('total-val').innerText = total.toLocaleString();
+
+            if (cart.length === 0) {
+                list.innerHTML = `<p class="text-slate-400 text-center py-10">No items selected</p>`;
+                return;
+            }
+
+            list.innerHTML = cart.map(item => `
+                <div class="flex justify-between items-center bg-white/50 p-4 rounded-2xl border border-white shadow-sm">
+                    <span class="font-bold text-slate-700">${item.name}</span>
+                    <span class="font-black text-indigo-600">${item.price} RWF</span>
+                </div>
+            `).join('');
+        }
+
+        async function startCheckout() {
+            if (total === 0) return;
+            document.getElementById('modal-total').innerText = total.toLocaleString();
+            document.getElementById('pay-modal').classList.remove('hidden');
+            await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ amount: total })
+            });
+        }
+
+        function closeModal() { document.getElementById('pay-modal').classList.add('hidden'); }
+
+        async function adminTopup() {
+            const uid = document.getElementById('admin-uid').value;
+            const amount = document.getElementById('admin-amount').value;
+            if(!uid || !amount) return;
+            await fetch('/api/topup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ uid, amount: parseInt(amount) })
+            });
+            alert("Funds Sent!");
+            document.getElementById('admin-amount').value = "";
+        }
+
+        socket.on('card_tapped', (data) => {
+            document.getElementById('admin-uid').value = data.uid;
+            document.getElementById('latest-scan').innerHTML = `<strong>Active ID:</strong> ${data.uid}<br><strong>Balance:</strong> ${data.balance} RWF`;
+            const history = document.getElementById('tap-history');
+            history.insertAdjacentHTML('afterbegin', `<div class="p-3 bg-white/40 rounded-xl border border-white">${data.uid} checked in</div>`);
+        });
+
+        socket.on('checkout_result', (data) => {
+            closeModal();
+            if(data.status === 'success') {
+                alert("Payment Confirmed! ✅");
+                clearCart();
+            } else {
+                alert("Insufficient Funds! ❌");
+            }
+        });
+    </script>
+</body>
+</html>
